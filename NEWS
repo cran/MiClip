@@ -1,0 +1,29 @@
+0.11 (NOT YET RELEASED)
+  * Corrected an error of file path in the Chi demo dataset
+  * No longer depend on List::MoreUtils
+  * Demo data are now precomputed
+  * Corrected the mistake of not using extdata to store data
+  * Corrected the mistake of writing to the user's home directory
+  * Fixed summary function
+  * Changed notations of mutation from the format of T->C to T2C
+0.10 (NOT YET RELEASED)
+  * The in-house perl script to scan motif, which is used for our publication, is included in the exec folder.
+  * Added suggestion for handling "multiple mapping" reads in the vignette.
+  * Added MiCLip.galaxy for Galaxy mirror.
+  * Added multiple mapping support in paired-end mode.
+  * Fixed a bug concerning file path in MiClip.read and MiClip.adaptor
+  * Added MiClip.filter for screening SNPs
+0.9 (NOT YET RELEASED)
+  * MiClip.adaptor can now handle fasta format sequencing files.
+  * Added check for the step parameter.
+  * In MiClip.adaptor, changed the criterion of maximum number of mismatches to the maximum proportion of mismatches when aligning the adaptor sequence.
+0.8 (NOT YET RELEASED)
+  * Revised the manual for clearity.
+  * Package name is changed from hmmClip to MiClip.
+  * Added vignettes for users.
+  * The method dispatch for the generic plot function becomes deprecated.
+  * Corrected a bug concerning the handling of MD field in single-end mode.
+  * Corrected the problem of lower case letters in MD field.
+0.7 (NOT YET RELEASED)
+  * Added support for pair-end reads.
+  * Added references manual.

@@ -1,0 +1,249 @@
+%\VignetteIndexEntry{MiClip}
+%\VignettePackage{MiClip}
+
+\documentclass{article}
+
+\usepackage{Sweave}
+\usepackage[a4paper]{geometry}
+\usepackage{hyperref,graphicx}
+\usepackage{color}
+
+%\SweaveOpts{keep.source=TRUE,eps=TRUE,width=8,height=8.5} 
+\newcommand{\Robject}[1]{\texttt{#1}}
+\newcommand{\ext}[1]{\texttt{#1}}
+\newcommand{\Rpackage}[1]{\textit{#1}}
+\newcommand{\Rclass}[1]{\textit{#1}}
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\disc}[1]{\color{red} #1 \color{black}}
+\renewcommand{\floatpagefraction}{0.7}  
+\setkeys{Gin}{width=0.8\textwidth}
+  
+\author{Tao Wang\\ 
+The University of Texas Southwestern Medical Center,\\
+5323 Harry Hines Boulevard Dallas, Texas, 75390\\
+\texttt{tao.wang@utsouthwestern.edu}}
+
+\title{\textsf{\textbf{The \Rpackage{MiClip} package}}}
+
+\begin{document}
+
+\maketitle
+\begin{abstract}
+
+There has been increasing interest in the role of RNA-binding proteins in biological processes. Crosslinking and immunoprecipitation (CLIP) experiments have made it possible to identify binding sites of RNA-binding proteins in various cell culture and tissue types. The two most commonly used types of CLIP-Seq experiments are HITS-CLIP and PAR-CLIP. Here we present MiClip, an R package for identification of binding sites in CLIP-Seq experiments. The MiClip package employs two rounds of Hidden Markov Model to identify enriched regions and further high-confidence binding sites from raw sequencing data. 
+
+\end{abstract}
+
+\tableofcontents
+
+%--------------------------------------------------
+\section{Installation} 
+%--------------------------------------------------
+
+R (\url{http://www.r-project.org/}) needs to be installed first for \Rpackage{MiClip} and the installation of the \Rpackage{MiClip} package follows the regular method for R package installation. 
+
+However, \Rpackage{MiClip} also requires Perl to be installed. Perl should ship along with any standard UNIX and MacOS distribution. But Windows users probably need to install Perl themselves (\url{http://www.perl.com/}). The users can type the following line in the command console to check if Perl has been installed properly.
+
+\begin{verbatim}
+  perl -v
+\end{verbatim}
+
+%--------------------------------------------------
+\section{Preparation of input files} 
+%--------------------------------------------------
+
+%--------------------------------------------------
+\subsection{Trimming adaptor} 
+%--------------------------------------------------
+
+During CLIP-Seq experiments, RNAs are usually digested to short fragments. It is quite often for sequenced reads to have adaptor contamination at the 3' end, while it is relatively rare for the 5' end of short reads to have adaptor contamination. Thus, it is necessary to trim contaminating adaptor sequences from 3' end before running alignment. Users can use public softwares like Trimmomatic \cite{Trim} to trim adaptors. 
+
+We encourage users to use these more professional softwares, but we also provide a very simple helper function to remove adaptor sequence. Here we use a small portion of the data from \cite{Sara} for demonstration. A new file with ".removed" suffix will be generated in the same folder as the original file. On my computer, it takes ~40 minutes to process a fastq file of 20 million reads (80 million lines).
+
+<<echo = T>>=
+library("MiClip")
+
+MiClip.adaptor(file=system.file("extdata/test.fastq",package="MiClip"),
+                adaptor="TGGAATTCTCGGGTGCCAAGGAACTCCAGTCAC")
+@
+
+%--------------------------------------------------
+\subsection{Alignment} 
+%--------------------------------------------------
+
+The raw sequencing file can be single-end or paired-end in basespace or colorspace. Any mainstream alignment software can be used to align the short reads. The output format must be SAM format and in basespace. \Rpackage{MiClip} can work on both single-end and paired-end alignment files. In the case where the user wishes to pool the alignment files from several experiments, the user can just concatenate the SAM files simply by typing the following in the command console.
+
+\begin{verbatim}
+  cat example1.sam example2.sam > example.sam
+\end{verbatim}
+
+The MiClip algorithm collects mutation information from the CIGAR and MD fields of each short read. The MD field is a string for mismatching positions characterized by "MD:Z:" towards the end of each entry in the alignment file (\url{http://samtools.sourceforge.net/SAM1.pdf}). Please make sure the MD fields are present in the aligned reads. If not, the user should install and use samtools to populate the MD fields, please see the instructions by typing the following command in command console.
+
+\begin{verbatim}
+  samtools fillmd
+\end{verbatim}
+
+However, this command runs very slowly. So it will be much better if the user can choose an alignment software which will give MD fields to all mapped tags in the very beginning. I myself only know that bowtie and novoalign produce correct MD fields and tophat cannot. It won't be a bad idea to try your aligner first on a small test dataset and see if MD field is attached before aligning all your samples.
+
+%--------------------------------------------------
+\subsection{Multiple-mapping reads} 
+%--------------------------------------------------
+
+"Multiple mapping" reads are reads that can be mapped to more than one place in the genome. In the alignment process, the user can specify whether/how many hits per read to report in the alignment file while MiClip will take in all reported hits.
+
+%--------------------------------------------------
+\subsection{Mapping across splice junctions} 
+%--------------------------------------------------
+
+Reads that are mapped across splice junctions are discarded (these are different from reads that are mapped with short deletions). These reads typically only occupy less than 3\% of total mapped reads. If you insist on analyzing these reads too, please map your reads to trancriptome and then analyze them using \Rpackage{MiClip}. 
+
+%--------------------------------------------------
+\subsection{Paired-end reads} 
+%--------------------------------------------------
+
+For paired-end reads, the users must look at the sequencing files and provide the suffix for the forward strand and the negative strand. For example, the mate in the sequencing dataset may be named like "694\_122\_1972-F3" and "694\_122\_1972-F5-RNA", where "694\_122\_1972" is the id number of the mates, "F3" means forward strand and "F5-RNA" means backward strand. Then the suffix should be "F3" and "F5-RNA" or "F3" and "F5-RNA" or "3" and "5-RNA".
+
+Sometimes, the aligner will trim the suffix. For example, "HWI-ST188:8:2217:5190:132924\#0/1" and "HWI-ST188:8:2217:5190:132924\#0/2" are one mate and certain aligners will only write "HWI-ST188:8:2207:5196:132923\#0" for both segments in the alignment file. In such cases, please set the suffix to "" and "" or "\#0" and "\#0". The point is to make the remaining part of the read names the same for a mate.
+
+%--------------------------------------------------
+\section{Running \Rpackage{MiClip}} 
+%--------------------------------------------------
+
+%--------------------------------------------------
+\subsection{Construct a \Rpackage{MiClip} class object for following analysis} 
+%--------------------------------------------------
+
+The analysis of \Rpackage{MiClip} starts by constructing a \Robject{MiClip} object. Here we used a small portion of the single-end HITS-CLIP data provided in \cite{Sung} for demonstration purpose.
+
+<<echo = T>>=
+library("MiClip")
+
+test=MiClip(file=system.file("extdata/test.sam",package="MiClip"),mut.type="Del")
+
+# for paired-end data
+# test=MiClip(file="test.sam",paired=TRUE,suffix=c("F3","F5-RNA"))
+@
+
+This command returns a \Robject{MiClip} object for further analysis. Following sections will explain some of the available parameters in constructing this object. For detailed descriptions of all parameters, please refer to the \Rpackage{MiClip} manual. 
+
+One thing to note is that if you need to include the path name in the file name, the path name cannot start with anything like "$\sim$". Namely, you must write the path name in full like "/home/project/test.sam" rather than "$\sim$/project/test.sam".
+
+%--------------------------------------------------
+\subsection{Read raw sequencing data and mutation data} 
+%--------------------------------------------------
+
+The \Rfunction{MiClip.read} function calls some embeded perl scripts to form clusters (CLIP clusters) by overlapping reads and collect tag pile-up as well as mutation information from the input SAM file. This process will usually take a few minutes depending on the size of the file. 
+
+<<echo = T>>=
+test=MiClip.read(test) # read raw data
+@
+
+%--------------------------------------------------
+\subsection{Identify enriched bins} 
+%--------------------------------------------------
+
+The \Rfunction{MiClip.enriched} function first collects tag pile-up information on a \Rfunction{step} bp basis (bins) and estimates the paramters for a two-poisson mixture model for the count values. Because we are running a truncated part of the real data for demonstration, so the model estimation will not be accurate. Then the first Hidden Markov Model will try to identify the enriched bins vs. non-enriched bins in CLIP clusters.
+
+<<echo = T>>=
+test=MiClip.enriched(test,quiet=FALSE) # identify enriched regions
+@
+
+The \Robject{empirical} parameter is devised to adjust model estimation in this step. The default for \Robject{empirical} is "auto", which lets the algorithm decides its value. User can set this value to roughly the minimal number of overlapping tags for a "true" cluster according to user's experience and experimental design. Larger value will lead to more conservative predictions. 
+
+%--------------------------------------------------
+\subsection{Identify binding sites} 
+%--------------------------------------------------
+
+The \Rfunction{MiClip.binding} function first concatenates neighboring enriched bins and then expands each chain of adjacent bins into single base pairs. Then \Rfunction{MiClip.binding} collects the tag pile-up and mutant pile-up information on each base for estimation of a mixture model of one zero-inflated binomial distribution and a binomial distribution. Then the second Hidden Markov Model is run to identify significant binding sites.
+
+<<echo = T>>=
+test=MiClip.binding(test,quiet=FALSE) # identify binding sites
+@
+
+The \Robject{model.cut} parameter is devised to adjust model estimation in this step. The default for \Robject{model.cut} is 0.2. User can set this value to roughly the minimal proportion of mutant tag vs. total tag on true binding sites according to user's experience and experimental design. Larger value will lead to more conservative predictions. 
+
+%--------------------------------------------------
+\subsection{Screening for SNPs} 
+%--------------------------------------------------
+
+The \Rpackage{MiClip} package builds in a function \Rfunction{MiClip.snp} for distinguishing true binding sites from possible SNPs. The control can be a sequenced sample that is not processed by the crosslinking step. Optionally, users can do quality screening on the fastq sequencing file before alignment to the reference genome. Then the \Rfunction{MiClip.snp} function will take the alignment file as input. Because there is no real control sample from the original study, we use part of the test.sam file as a fake control sample for demonstration.
+
+<<echo = T>>=
+test=MiClip.snp(test,file=system.file("extdata/snp.sam",package="MiClip"),mut.type="Del")
+@
+
+%--------------------------------------------------
+\section{Output of \Rpackage{MiClip}} 
+%--------------------------------------------------
+
+%--------------------------------------------------
+\subsection{Output format} 
+%--------------------------------------------------
+
+\Rfunction{MiClip.binding} returns a \Robject{MiClip} object which normally comprises of three data frames.
+
+<<echo = T>>=
+enriched=test$enriched # test will contain at least three data frames
+sites=test$sites
+clusters=test$clusters
+
+head(enriched) # view these data frames
+head(sites)
+head(clusters)
+
+head(enriched[enriched$enriched,]) # view enriched bins
+head(sites[sites$sites,]) # view binding sites
+head(clusters[clusters$enriched,]) # view clusters with enriched bins
+head(clusters[clusters$sites,]) # view clusters with binding sites
+@
+
+\Robject{enriched} is the output of the first Hidden Markov Model. \Robject{region\_id} is the id number for each cluster. \Robject{chr}, \Robject{strand}, \Robject{start} and \Robject{end} specify the genomic location of each bin. \Robject{tag} is the rounded average tag count in each bin. \Robject{enriched} and \Robject{probability} are the inference results.\newline
+
+\Robject{sites} is the output of the second Hidden Markov Model. \Robject{region\_id} is the id number for the cluster which each base resides in. \Robject{sub\_region\_id} is the id number of the concatenated segment. Sometimes one enriched cluster has multiple modes, so it may be cut into two or more segments. \Robject{chr}, \Robject{strand} and \Robject{pos} specify the genomic location of each base. \Robject{tag} is the tag count and \Robject{mutant} is the mutant count on each base. \Robject{sites} and \Robject{probability} are the inference results.\newline
+
+\Robject{clusters} is the summary of results for all clusters. \Robject{region\_id} is the id number for each cluster. \Robject{chr}, \Robject{strand}, \Robject{start} and \Robject{end} specify the genomic range. \Robject{enriched} specifies whether a cluster is found to have at least one enriched bin, and \Robject{sites} specifies whether a cluster is found to have at least one significant binding site. 
+
+%--------------------------------------------------
+\subsection{SNPs} 
+%--------------------------------------------------
+
+If we further process the \Robject{MiClip} object with \Rfunction{MiClip.snp}, a data frame \Robject{snps} will be added to the \Robject{MiClip} object. It contains information of the possible SNP sites extracted from the control experiment file. Also, a column will be added to \Robject{sites} specifying whether a binding site could actually be a SNP and another column will be added to \Robject{clusters} specifying whether a cluster contains a least one binding site which could actually be a SNP.
+
+<<echo = T>>=
+snps=test$snps
+head(snps) # Inferred possible SNP sites are contained in this data frame
+
+head(sites[sites$SNP,]) # In this dataset, three possible SNPs are found
+head(clusters[clusters$SNP,])
+@
+
+%--------------------------------------------------
+\subsection{\Rfunction{MiClip.sum}} 
+%--------------------------------------------------
+
+\Rpackage{MiClip} provides a summary function \Rfunction{MiClip.sum}. Because we are using a very small toy sample data, the results presented are not realistic.
+
+<<echo = T>>=
+MiClip.sum(test)
+@
+
+\Rfunction{MiClip.sum} gives the basic statistics on the results of the two rounds of Hidden Markov Model.
+
+\section{Session Info}
+<<session>>=
+sessionInfo()
+@
+
+\begin{thebibliography}{}
+
+\bibitem{Sara} Macias, S., et al. (2012) DGCR8 HITS-CLIP reveals novel functions for the Microprocessor.
+\textit{Nat Struct Mol Biol} 19(8): p. 760-6.
+
+\bibitem{Sung} Chi SW, Zang JB, Mele A, Darnell RB. (2009) Argonaute HITS-CLIP decodes microRNA-mRNA interaction maps. 
+\textit{Nature} 2009 Jul 23;460(7254):479-86. Epub 2009 Jun 17.
+
+\bibitem{Trim} Lohse M, Bolger AM, Nagel A, Fernie AR, Lunn JE, Stitt M, Usadel B. (2012) RobiNA: a user-friendly, integrated software solution for RNA-Seq-based transcriptomics.
+\textit{Nucleic Acids Res} 2012 Jul;40(Web Server issue):W622-7.
+
+\end{thebibliography}
+\end{document}

@@ -1,0 +1,2 @@
+export(MiClip,MiClip.read,MiClip.enriched,MiClip.binding,MiClip.sum,MiClip.adaptor,MiClip.snp,MiClip.galaxy)
+import(moments,VGAM)
