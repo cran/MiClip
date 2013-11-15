@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use POSIX qw/floor/;
+$SIG{__WARN__}=sub{die "SAM file format error!\n"};
 
 my ($suffix_f,$suffix_r,$file_tag,$file_merge)=@ARGV;
 my ($i,%tags,@items,$tag,$name);

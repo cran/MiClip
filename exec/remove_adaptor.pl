@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+$SIG{__WARN__}=sub{die "Sequencing file format error!\n"};
 
 my ($format,$file,$adaptor,$len_limit,$mismatch)=@ARGV;
 my $ad_len=0;

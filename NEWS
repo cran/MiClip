@@ -1,3 +1,12 @@
+1.2
+  * Added an option to consider background if the control sequencing data is availabe
+1.1
+  * Fixed a bug in counting insertions 
+  * Fixed a bug for conversion of strand when dealing with paired-end data
+  * Fixed a bug concerning the step parameter
+1.0 
+  * This is the first formal release of MiClip
+  * Added more error handling steps in all Perl scripts
 0.11 (NOT YET RELEASED)
   * Corrected an error of file path in the Chi demo dataset
   * No longer depend on List::MoreUtils

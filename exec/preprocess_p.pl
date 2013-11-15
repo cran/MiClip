@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use POSIX qw/floor/;
 use List::Util qw/min max/;
+$SIG{__WARN__}=sub{die "SAM file format error!\n"};
 
 # $step is the step resolution desired
 # $file_cluster is the combined cluster file
@@ -96,7 +97,7 @@ sub read_tag # read tag file, only maintain tags in the %tags hash
   map {$_+=($$f_ref[0]-1);} @mut_f;
 
   @mut_r=();
-  read_mut($mut_type,$r_ref,\@mut_r,! $strand);
+  read_mut($mut_type,$r_ref,\@mut_r,$strand);
   map {$_+=($$r_ref[0]-1);} @mut_r;  
 
   push @$muts_ref,(uniq (@mut_f,@mut_r)); # record mutation information

@@ -10,9 +10,16 @@ function(mic)
   max.iterats=mic$max.iterats
   conver.cut=mic$conver.cut
   step=mic$step
+  background=mic$background # control sequencing data
   
   bins=raw
-  step=bins[2,3]-bins[1,3]
+  
+  if (!is.null(background)) # normalized if the background data are available
+  {
+    bins[,-c(1:4)]=bins[,-c(1:4)]+1
+    background[,-c(1:4)]=background[,-c(1:4)]+1
+    bins[,-c(1:4)]=round(bins[,-c(1:4)]/background[,-c(1:4)])
+  }
   
   bins[,5]=apply(bins[,5:(4+step)],1,sum)
   bins=bins[,1:5]

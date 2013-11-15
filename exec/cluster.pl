@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use List::Util qw/max/;
+$SIG{__WARN__}=sub{die "SAM file format error!\n"};
 
 my ($file_tag,$file_cluster)=@ARGV;
 my ($temp,$count,@items,%tags,$len,$chr,@pos_start,$end,@cluster,$i,$line,$strand);

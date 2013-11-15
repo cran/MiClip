@@ -23,7 +23,7 @@ An object of class \code{MiClip} is returned.
     The output of the first HMM as a data frame. \code{region_id} is the id number generated for each cluster. \code{chr}, \code{strand}, \code{start} and \code{end} specify the genomic location of each bin. \code{tag} is the rounded average tag count in each bin. \code{enriched} and \code{probability} are the inference results.
   }
   \item{sites}{
-    The output of the second HMM as a data frame. \code{region_id} is the id number generated for the cluster where each base resides in. \code{sub_region_id} is the id number of the concatenated segment within enriched clusters. \code{chr}, \code{strand} and \code{pos} specify the genomic location of each base. \code{tag} is the read count on each base and \code{mutant} is the mutant count on each base. \code{sites} and \code{probability} are the inference results.
+    The output of the second HMM as a data frame. \code{region_id} is the id number generated for the cluster where each base resides. \code{sub_region_id} is the id number of the concatenated segment within enriched clusters. \code{chr}, \code{strand} and \code{pos} specify the genomic location of each base. \code{tag} is the read count on each base and \code{mutant} is the mutant count on each base. \code{sites} and \code{probability} are the inference results.
   }
   \item{clusters}{
     The summary of results for all CLIP clusters. \code{clusters} contains information of chromosome, strand, start position, end position, whether or not contains enriched bins and whether or not contains binding sites.

@@ -11,6 +11,7 @@ function(mic)
   conver.cut=mic$conver.cut
   paired=mic$paired
   suffix=mic$suffix
+  background=mic$background
   
   ##############  check perl  ###############################
   
@@ -30,6 +31,7 @@ function(mic)
     command=paste("perl \"",perlpath,"/cluster.pl\" \"",file,"\" \"",cluster_file,"\"",sep="")
     status=system(command,intern=FALSE) # form clusters
     if (status!=0) {stop("Forming cluster file has non-zero exit status!\n")}
+    cat("Identifying clusters finished!\n")
     
     #########  read tags and mutants  ###############################
     
@@ -39,6 +41,7 @@ function(mic)
       "\" \"",mut.type,"\" \"",bin_file,"\"",sep="")
     status=system(command,intern=FALSE) # count base coverage
     if (status!=0) {stop("Generating bin file has non-zero exit status!\n")}
+    cat("Generating bin file finished!\n")
   }else
   {
     #########  merge paired-end data  ##############################
@@ -49,6 +52,7 @@ function(mic)
                   " \"",file,"\" \"",merge_file,"\"",sep="")
     status=system(command,intern=FALSE) # merge paired-end read
     if (status!=0) {stop("Merging paired-end sequencing file has non-zero exit status!\n")}
+    cat("Merging mate pairs finished!\n")
     
     #########  form clusters  ######################################
     
@@ -57,6 +61,7 @@ function(mic)
     command=paste("perl \"",perlpath,"/cluster_p.pl\" \"",merge_file,"\" \"",cluster_file,"\"",sep="")
     status=system(command,intern=FALSE) # form clusters
     if (status!=0) {stop("Forming cluster file has non-zero exit status!\n")}
+    cat("Identifying clusters finished!\n")
     
     #########  read tags and mutants  ###############################
     
@@ -66,6 +71,7 @@ function(mic)
                   "\" \"",mut.type,"\" \"",bin_file,"\"",sep="")
     status=system(command,intern=FALSE) # count base coverage
     if (status!=0) {stop("Generating bin file has non-zero exit status!\n")}
+    cat("Generating bin file finished!\n")
   }
   
   ##############  read in data  ##################################
@@ -75,7 +81,8 @@ function(mic)
   unlink(bin_file) # read and delete intermediate files
   
   result=list(raw=raw,max.hmm=max.hmm,empirical=empirical,model.cut=model.cut,
-    max.iterats=max.iterats,conver.cut=conver.cut,step=step,scale=scale)
+    max.iterats=max.iterats,conver.cut=conver.cut,step=step,scale=scale,
+    background=background)
   class(result)="MiClip"
   
   return(result)

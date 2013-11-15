@@ -4,7 +4,9 @@
 \description{
   A wrapper function for running MiClip on Galaxy mirror. This function is not to be used by outside users.
 }
-\usage{MiClip.galaxy(file="",control=NULL,mut.type="T2C",step=5,max.hmm=100,paired=F,suffix=NULL,empirical="auto",model.cut=0.2,max.iterats=20,conver.cut=0.01)
+\usage{MiClip.galaxy(file="",control=NULL,mut.type="T2C",step=5,max.hmm=100,
+paired=F,suffix=NULL,empirical="auto",model.cut=0.2,max.iterats=20,
+conver.cut=0.01)
 }
 \arguments{
   \item{file}{

@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use POSIX qw/floor/;
 use List::Util qw/min max/;
+$SIG{__WARN__}=sub{die "SAM file format error!\n"};
 
 # $step is the step resolution desired
 # $file_cluster is the combined cluster file
@@ -108,7 +109,6 @@ sub read_mut
     {
       {if (exists $mut_type{"Ins"}) {push @$mut_pos_ref,($ref_pos+1);}}
       substr($seq,$tag_pos,$1)="";
-      $tag_pos+=$1;
     }else
     { 
       {if (exists $mut_type{"Del"}) {push @$mut_pos_ref,($ref_pos+1);}}
@@ -176,7 +176,7 @@ sub mut_hash
 
   if ($mut_type=~/all/)
   {
-    $mut_type_ref={"A2C"=>1,"A2T"=>1,"A2G"=>1,"T2A"=>1,"T2G"=>1,"T2C"=>1,"C2A"=>1,"C2T"=>1,"C2G"=>1,"G2A"=>1,"G2T"=>1,"G2C"=>1,"Del"=>1,"Ins"=>1};
+    %$mut_type_ref=("A2C"=>1,"A2T"=>1,"A2G"=>1,"T2A"=>1,"T2G"=>1,"T2C"=>1,"C2A"=>1,"C2T"=>1,"C2G"=>1,"G2A"=>1,"G2T"=>1,"G2C"=>1,"Del"=>1,"Ins"=>1);
   }else
   {
     map {$mut_type_ref->{$_}=1;} split(",",$mut_type);

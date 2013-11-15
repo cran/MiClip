@@ -22,6 +22,7 @@ An object of class \code{MiClip} is returned.
   \item{model.cut}{The cutoff for fitting the mixture model in the second HMM.}
   \item{max.iterats}{The maximum number of iterations allowed for both HMM iterations.}
   \item{conver.cut}{The cutoff for reaching convergence}
+  \item{background}{The background data frame if available}
 }
 \seealso{
 \code{\link{MiClip.read}}, \code{\link{MiClip.enriched}}, \code{\link{MiClip.binding}}, \code{\link{MiClip.sum}}
