@@ -7,6 +7,10 @@ $SIG{__WARN__}=sub{die "SAM file format error!\n"};
 my ($suffix_f,$suffix_r,$file_tag,$file_merge)=@ARGV;
 my ($i,%tags,@items,$tag,$name);
 my $md_field=-1;
+
+if ($suffix_f eq "EMPTY_STRING") {$suffix_f="";} # fix in MiClip1.3
+if ($suffix_r eq "EMPTY_STRING") {$suffix_r="";}
+
 $suffix_f='^(.*)'.$suffix_f.'$';
 $suffix_r='^(.*)'.$suffix_r.'$';
 $suffix_f=qr/$suffix_f/;

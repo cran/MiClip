@@ -128,8 +128,6 @@ test=MiClip(file=system.file("extdata/test.sam",package="MiClip"),mut.type="Del"
 
 This command returns a \Robject{MiClip} object for further analysis. Following sections will explain some of the available parameters in constructing this object. For detailed descriptions of all parameters, please refer to the \Rpackage{MiClip} manual. 
 
-One thing to note is that if you need to include the path name in the file name, the path name cannot start with anything like "$\sim$". Namely, you must write the path name in full like "/home/project/test.sam" rather than "$\sim$/project/test.sam".
-
 %--------------------------------------------------
 \subsection{Read raw sequencing data and mutation data} 
 %--------------------------------------------------

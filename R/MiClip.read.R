@@ -1,7 +1,7 @@
 MiClip.read <-
 function(mic)
 {
-  file=mic$file
+  file=path.expand(mic$file)
   mut.type=mic$mut.type
   step=mic$step
   max.hmm=mic$max.hmm
@@ -11,7 +11,7 @@ function(mic)
   conver.cut=mic$conver.cut
   paired=mic$paired
   suffix=mic$suffix
-  background=mic$background
+  if (is.null(mic$background)) {background=NULL} else {background=path.expand(mic$background)}
   
   ##############  check perl  ###############################
   
@@ -48,6 +48,10 @@ function(mic)
     
     merge_file=tempfile(pattern="merge.",tmpdir,fileext=".bed")
     merge_file=sub('\\\\','/',merge_file)
+    
+    if (suffix[1]=="") {suffix[1]="EMPTY_STRING"} # fix in MiClip1.3
+    if (suffix[2]=="") {suffix[2]="EMPTY_STRING"}
+    
     command=paste("perl \"",perlpath,"/merge_pair.pl\" ",suffix[1]," ",suffix[2],
                   " \"",file,"\" \"",merge_file,"\"",sep="")
     status=system(command,intern=FALSE) # merge paired-end read
